@@ -10,6 +10,6 @@ CLOUDIFY=$(awk 'match($0, /_management_ip:/){print $3}' .cloudify/context | tr -
 USER=$(awk 'match($0, /_management_user:/){print $3}' .cloudify/context | tr -d \')
 KEY=$(awk 'match($0, /_management_key:/){print $3}' .cloudify/context | tr -d \'~)
 
-ssh_command1="sudo systemctl stop cloudify-mgmtworker.service;sudo systemctl stop cloudify-influxdb.service"
+ssh_command="sudo systemctl stop cloudify-mgmtworker.service;sudo systemctl stop cloudify-influxdb.service"
 
 ssh -i $HOME$KEY $USER@$CLOUDIFY $ssh_command
