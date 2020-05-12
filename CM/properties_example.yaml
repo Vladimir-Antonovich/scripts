@@ -1,0 +1,140 @@
+ca:
+  commonname: "test ca"
+  password: ''
+
+certificates:  
+  - commonname: db1-host
+    commonname_ip: 192.168.24.21
+    country: US
+    state: NY
+    location: New York
+    organization: Organization
+    subjectaltname:
+      ips:
+        - 192.168.24.21
+      names:
+        - db1-host
+
+  - commonname: db2-host
+    commonname_ip: 192.168.24.22
+    country: US
+    state: NY
+    location: New York
+    organization: Organization
+    subjectaltname:
+      ips:
+        - 192.168.24.22
+      names:
+        - db2-host
+          
+  - commonname: db3-host
+    commonname_ip: 192.168.24.23
+    country: US
+    state: NY
+    location: New York
+    organization: Organization
+    subjectaltname:
+      ips:
+        - 192.168.24.23
+      names:
+        - db3-host
+
+
+  - commonname: broker1-host
+    commonname_ip: 192.168.24.24
+    country: US
+    state: NY
+    location: New York
+    organization: Organization
+    subjectaltname:
+      ips:
+        - 192.168.24.24
+        - 10.239.2.82
+      names:
+        - broker1-host
+        - 10.239.2.82
+
+  - commonname: broker2-host
+    commonname_ip: 192.168.24.25
+    country: US
+    state: NY
+    location: New York
+    organization: Organization
+    subjectaltname:
+      ips:
+        - 192.168.24.25
+        - 10.239.2.82
+      names:
+        - broker2-host
+        - 10.239.2.82
+
+  - commonname: broker3-host
+    commonname_ip: 192.168.24.26
+    country: US
+    state: NY
+    location: New York
+    organization: Organization
+    subjectaltname:
+      ips:
+        - 192.168.24.26
+        - 10.239.2.82
+      names:
+        - broker3-host
+        - 10.239.2.82
+
+
+  - commonname: manager1-host
+    commonname_ip: 192.168.24.27
+    country: US
+    state: NY
+    location: New York
+    organization: Organization
+    subjectaltname:
+      ips:
+        - 192.168.24.27
+        - 10.239.2.82
+      names:
+        - manager1-host
+        - 10.239.2.82
+
+  - commonname: manager2-host
+    commonname_ip: 192.168.24.28
+    country: US
+    state: NY
+    location: New York
+    organization: Organization
+    subjectaltname:
+      ips:
+        - 192.168.24.28
+        - 10.239.2.82
+      names:
+        - manager2-host
+        - 10.239.2.82
+
+  - commonname: manager3-host
+    commonname_ip: 192.168.24.29
+    country: US
+    state: NY
+    location: New York
+    organization: Organization
+    subjectaltname:
+      ips:
+        - 192.168.24.29
+        - 10.239.2.82
+      names:
+        - manager3-host
+        - 10.239.2.82
+
+  - commonname: lb-host
+    commonname_ip: 192.168.24.30
+    country: US
+    state: NY
+    location: New York
+    organization: Organization
+    subjectaltname:
+      ips:
+        - 192.168.24.30
+        - 10.239.2.82
+      names:
+        - manager3-host
+        - 10.239.2.82
