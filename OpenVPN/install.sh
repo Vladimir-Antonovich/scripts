@@ -106,8 +106,6 @@ mute 20
 #reneg-sec 0
 EOL
 
-systemctl restart openvpn@server
-
 # Create service
 
 cat > /usr/lib/systemd/system/openvpn@.service <<< EOL
