@@ -9,6 +9,7 @@ EXTERNAL_IP="$(/sbin/ip -o -4 addr list $FIRST_INTERFACE | awk '{print $4}' | cu
 
 VALID_DAYS=3650
 
+mkdir /var/run/openvpn
 rm -rf /etc/pki/CA
 mkdir /etc/pki/CA
 mkdir /etc/pki/CA/private
@@ -67,7 +68,7 @@ dh dh2048.pem
 
 server 10.8.0.0 255.255.255.0
 
-ifconfig-pool-persist ipp.txt
+# ifconfig-pool-persist ipp.txt
 
 push "route 172.16.167.0 255.255.255.0"
 push "route 172.16.168.0 255.255.255.0"
@@ -124,6 +125,11 @@ WantedBy=multi-user.target
 EOL
 
 # Generate client 
+
+tls_auth=$(cat /etc/openvpn/ta.key)
+ca=$(cat /etc/openvpn/ca.crt)
+cert=$(cat /etc/openvpn/client1.crt)
+key=$(cat /etc/openvpn/client1.key)
 
 cat > /etc/openvpn/client.ovpn << EOL
 remote  $EXTERNAL_IP 1194
