@@ -108,7 +108,7 @@ EOL
 
 # Create service
 
-cat > "/usr/lib/systemd/system/openvpn@.service" <<< EOL
+cat > /usr/lib/systemd/system/openvpn@.service << EOL
 [Unit]
 Description=OpenVPN Robust And Highly Flexible Tunneling Application On %I
 After=network.target
@@ -125,7 +125,7 @@ EOL
 
 # Generate client 
 
-cat > /etc/openvpn/client.ovpn <<EOL
+cat > /etc/openvpn/client.ovpn << EOL
 remote  $EXTERNAL_IP 1194
 client
 dev tun
