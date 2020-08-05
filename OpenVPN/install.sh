@@ -108,7 +108,7 @@ EOL
 
 # Create service
 
-cat > /usr/lib/systemd/system/openvpn@.service << EOL
+cat > /usr/lib/systemd/system/openvpn@server.service << EOL
 [Unit]
 Description=OpenVPN Robust And Highly Flexible Tunneling Application On %I
 After=network.target
@@ -158,6 +158,8 @@ systemctl daemon-reload
 systemctl enable openvpn@server.service
 systemctl start openvpn@server.service
 
+# echo "net.ipv4.ip_forward = 1" | tee -a /etc/sysctl.conf
+# sysctl -p
 
 
 # dnf install -y firewalld
@@ -175,9 +177,6 @@ systemctl start openvpn@server.service
 # firewall-cmd --zone=openvpn --permanent --add-forward-port=toaddr=172.16.167.0/24
 # firewall-cmd --zone=openvpn --permanent --add-forward-port=toaddr=172.16.168.0/24
 
-
-# echo "net.ipv4.ip_forward = 1" | tee -a /etc/sysctl.conf
-# sysctl -p
 
 # firewall-cmd --zone=trusted --add-interface=tun0 --permanent
 # firewall-cmd --reload
