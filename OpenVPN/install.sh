@@ -9,6 +9,11 @@ EXTERNAL_IP="$(/sbin/ip -o -4 addr list $FIRST_INTERFACE | awk '{print $4}' | cu
 
 VALID_DAYS=3650
 
+mkdir /etc/pki/CA
+mkdir /etc/pki/CA/private
+mkdir /etc/pki/CA/certs
+mkdir /etc/pki/CA/newcerts
+
 cd /etc/pki/CA
 rm -f index.txt
 rm -f serial
