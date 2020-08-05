@@ -9,16 +9,12 @@ EXTERNAL_IP="$(/sbin/ip -o -4 addr list $FIRST_INTERFACE | awk '{print $4}' | cu
 
 VALID_DAYS=3650
 
+rm -rf /etc/pki/CA
 mkdir /etc/pki/CA
 mkdir /etc/pki/CA/private
 mkdir /etc/pki/CA/certs
 mkdir /etc/pki/CA/newcerts
-
 cd /etc/pki/CA
-rm -f index.txt
-rm -f serial
-rm -f crlnumber
-rm -fr req
 
 touch index.txt
 echo '01' > serial
@@ -112,6 +108,23 @@ EOL
 
 systemctl restart openvpn@server
 
+# Create service
+
+cat > /usr/lib/systemd/system/openvpn@.service <<< EOL
+[Unit]
+Description=OpenVPN Robust And Highly Flexible Tunneling Application On %I
+After=network.target
+
+[Service]
+PrivateTmp=true
+Type=forking
+PIDFile=/var/run/openvpn/%i.pid
+ExecStart=/usr/sbin/openvpn --daemon --writepid /var/run/openvpn/%i.pid --cd /etc/openvpn/ --config %i.conf
+
+[Install]
+WantedBy=multi-user.target
+EOL
+
 # Generate client 
 
 cat > /etc/openvpn/client.ovpn <<EOL
@@ -142,6 +155,11 @@ $cert
 $key
 </key>
 EOL
+
+systemctl daemon-reload
+systemctl enable openvpn@server.service
+systemctl start openvpn@server.service
+
 
 
 # dnf install -y firewalld
