@@ -9,7 +9,6 @@ EXTERNAL_IP="$(/sbin/ip -o -4 addr list $FIRST_INTERFACE | awk '{print $4}' | cu
 
 VALID_DAYS=3650
 
-mkdir /var/run/openvpn
 rm -rf /etc/pki/CA
 mkdir /etc/pki/CA
 mkdir /etc/pki/CA/private
@@ -118,7 +117,7 @@ After=network.target
 PrivateTmp=true
 Type=forking
 PIDFile=/var/run/openvpn/%i.pid
-ExecStart=/usr/sbin/openvpn --daemon --writepid /var/run/openvpn/%i.pid --cd /etc/openvpn/ --config %i.conf
+ExecStart=/usr/sbin/openvpn --daemon --writepid /var/run/openvpn-server/%i.pid --cd /etc/openvpn/ --config %i.conf
 
 [Install]
 WantedBy=multi-user.target
