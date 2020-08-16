@@ -45,25 +45,25 @@ openssl ca -days $VALID_DAYS -batch -out certs/client1.crt -infiles req/client1.
 
 # Copy files to openvpn folder
 
-/bin/cp cacert.pem /etc/openvpn/ca.crt
-/bin/cp private/server.key /etc/openvpn/server.key
-/bin/cp certs/server.crt /etc/openvpn/server.crt
-/bin/cp private/client1.key /etc/openvpn/client1.key
-/bin/cp certs/client1.crt /etc/openvpn/client1.crt
+/bin/cp cacert.pem /etc/openvpn/server/ca.crt
+/bin/cp private/server.key /etc/openvpn/server/server.key
+/bin/cp certs/server.crt /etc/openvpn/server/server.crt
+/bin/cp private/client1.key /etc/openvpn/server/client1.key
+/bin/cp certs/client1.crt /etc/openvpn/server/client1.crt
 
 # generate ta.key
-openvpn --genkey --secret /etc/openvpn/ta.key
-openssl dhparam -out /etc/openvpn/dh2048.pem 2048
+openvpn --genkey --secret /etc/openvpn/server/ta.key
+openssl dhparam -out /etc/openvpn/server/dh2048.pem 2048
 
-cat > /etc/openvpn/server.conf <<EOL
+cat > /etc/openvpn/server/server.conf <<EOL
 port 1194
 proto udp
 dev tun
 
-ca ca.crt
-cert server.crt
-key server.key  # This file should be kept secret
-dh dh2048.pem
+ca /etc/openvpn/server/ca.crt
+cert /etc/openvpn/server/server.crt
+key /etc/openvpn/server/server.key  # This file should be kept secret
+dh /etc/openvpn/server/dh2048.pem
 
 server 10.8.0.0 255.255.255.0
 
@@ -79,7 +79,7 @@ duplicate-cn
 
 keepalive 10 120
 
-tls-auth ta.key 0 # This file is secret
+tls-auth /etc/openvpn/server/ta.key 0 # This file is secret
 
 comp-lzo
 
@@ -106,31 +106,14 @@ mute 20
 #reneg-sec 0
 EOL
 
-# Create service
-
-cat > /usr/lib/systemd/system/openvpn@server.service << EOL
-[Unit]
-Description=OpenVPN Robust And Highly Flexible Tunneling Application On %I
-After=network.target
-
-[Service]
-PrivateTmp=true
-Type=forking
-PIDFile=/var/run/openvpn/%i.pid
-ExecStart=/usr/sbin/openvpn --daemon --writepid /var/run/openvpn-server/%i.pid --cd /etc/openvpn/ --config %i.conf
-
-[Install]
-WantedBy=multi-user.target
-EOL
-
 # Generate client 
 
-tls_auth=$(cat /etc/openvpn/ta.key)
-ca=$(cat /etc/openvpn/ca.crt)
-cert=$(cat /etc/openvpn/client1.crt)
-key=$(cat /etc/openvpn/client1.key)
+tls_auth=$(cat /etc/openvpn/server/ta.key)
+ca=$(cat /etc/openvpn/server/ca.crt)
+cert=$(cat /etc/openvpn/server/client1.crt)
+key=$(cat /etc/openvpn/server/client1.key)
 
-cat > /etc/openvpn/client.ovpn << EOL
+cat > /etc/openvpn/client/client.ovpn << EOL
 remote  $EXTERNAL_IP 1194
 client
 dev tun
@@ -160,32 +143,28 @@ $key
 EOL
 
 systemctl daemon-reload
-systemctl enable openvpn@server.service
-systemctl start openvpn@server.service
+systemctl start openvpn-server@server.service
+systemctl enable --now openvpn-server@server.service
 
-# echo "net.ipv4.ip_forward = 1" | tee -a /etc/sysctl.conf
-# sysctl -p
+echo "net.ipv4.ip_forward = 1" | tee -a /etc/sysctl.conf
+sysctl --system
 
-
-# dnf install -y firewalld
-# systemctl status firewalld
-# systemctl start firewalld
-# systemctl enable firewalld
-# #firewall-cmd --permanent --zone=public --add-port=1194/udp
-# #firewall-cmd --reload
-# firewall-cmd --add-service openvpn --permanent
-# firewall-cmd --remove-service ssh --permanent
-# firewall-cmd --remove-service dhcpv6-client --permanent
-# firewall-cmd --zone=public --permanent --add-masquerade
-# firewall-cmd --permanent --new-zone=openvpn
-# firewall-cmd --reload
-# firewall-cmd --zone=openvpn --permanent --add-forward-port=toaddr=172.16.167.0/24
-# firewall-cmd --zone=openvpn --permanent --add-forward-port=toaddr=172.16.168.0/24
+dnf install -y firewalld
+systemctl start firewalld
+systemctl enable firewalld
+firewall-cmd --permanent --zone=public --add-port=1194/udp
+firewall-cmd --reload
+firewall-cmd --add-service openvpn --permanent
+firewall-cmd --zone=public --permanent --add-masquerade
+firewall-cmd --permanent --new-zone=openvpn
+firewall-cmd --reload
+firewall-cmd --zone=openvpn --permanent --add-forward-port=toaddr=172.16.167.0/24
+firewall-cmd --zone=openvpn --permanent --add-forward-port=toaddr=172.16.168.0/24
 
 
-# firewall-cmd --zone=trusted --add-interface=tun0 --permanent
-# firewall-cmd --reload
-# firewall-cmd --permanent --zone=trusted --add-masquerade
-# DEV=$(ip route get 8.8.8.8 | awk 'NR==1 {print $(NF-2)}')
-# firewall-cmd --permanent --direct --passthrough ipv4 -t nat -A POSTROUTING -s  10.8.0.0/24 -o $DEV -j MASQUERADE
-# firewall-cmd --reload
+firewall-cmd --zone=trusted --add-interface=tun0 --permanent
+firewall-cmd --reload
+firewall-cmd --permanent --zone=trusted --add-masquerade
+DEV=$(ip route get 8.8.8.8 | awk 'NR==1 {print $(NF-2)}')
+firewall-cmd --permanent --direct --passthrough ipv4 -t nat -A POSTROUTING -s  10.8.0.0/24 -o $DEV -j MASQUERADE
+firewall-cmd --reload
