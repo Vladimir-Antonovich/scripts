@@ -7,7 +7,7 @@ import datetime
 import ipaddress
 from OpenSSL import crypto
 from cryptography import x509
-from cryptography.x509.oid import NameOID
+from cryptography.x509 import oid
 from cryptography.hazmat.primitives import hashes
 from cryptography.hazmat.backends import default_backend
 from cryptography.hazmat.primitives import serialization
@@ -15,29 +15,26 @@ from cryptography.hazmat.primitives.asymmetric import rsa
 from ruamel.yaml import YAML
 
 
-CACERT_FILE = 'cacert.pem'
-CAKEY_FILE = 'cakey.pem'
-
-logger = None
+CA_CERT_FILE = 'ca_cert.pem'
+CAKEY_FILE = 'ca_key.pem'
 
 
-def logger():
-    logger = logging.getLogger()
-    logFormatter = logging.Formatter("%(asctime)s [%(threadName)-12.12s] \
+def set_logger():
+    lo = logging.getLogger()
+    log_formatter = logging.Formatter("%(asctime)s [%(threadName)-12.12s] \
                                      [%(levelname)-5.5s]  %(message)s")
-    consoleHandler = logging.StreamHandler(sys.stdout)
-    consoleHandler.setFormatter(logFormatter)
-    logger.addHandler(consoleHandler)
-    logger.setLevel(logging.DEBUG)
-    return logger
+    consolehandler = logging.StreamHandler(sys.stdout)
+    consolehandler.setFormatter(log_formatter)
+    lo.addHandler(consolehandler)
+    lo.setLevel(logging.DEBUG)
+    return lo
 
 
-def generate_ca_cert(properties={}):
+def generate_ca_cert(properties):
     logger.info("Generating ca certificate...")
     # _check_inputs(properties)
 
-    parameters = {}
-    parameters['commonname'] = u"{}".format(properties.get('commonname'))
+    parameters = {'commonname': u"{}".format(properties.get('commonname'))}
     if properties.get('password') != '':
         parameters['password'] = properties.get('password')
     else:
@@ -54,7 +51,7 @@ def generate_ca_cert(properties={}):
     return cacert_pem, cakey_pem
 
 
-def issue_certificate(cacert, cakey, properties={}):
+def issue_certificate(cacert, cakey, properties):
     logger.debug("Issuing certificate...")
     # _check_inputs(properties)
 
@@ -68,13 +65,11 @@ def issue_certificate(cacert, cakey, properties={}):
                                                password=None,
                                                backend=default_backend())
 
-    parameters = {}
-    parameters['country'] = u"{}".format(properties.get('country'))
-    parameters['state'] = u"{}".format(properties.get('state'))
-    parameters['location'] = u"{}".format(properties.get('location'))
-    parameters['organization'] = u"{}".format(properties.get('organization'))
-    parameters['commonname'] = u"{}".format(properties.get('commonname'))
-    parameters['commonname_ip'] = u"{}".format(properties.get('commonname_ip'))
+    parameters = {'country': u"{}".format(properties.get('country')), 'state': u"{}".format(properties.get('state')),
+                  'location': u"{}".format(properties.get('location')),
+                  'organization': u"{}".format(properties.get('organization')),
+                  'commonname': u"{}".format(properties.get('commonname')),
+                  'commonname_ip': u"{}".format(properties.get('commonname_ip'))}
     subjectaltname = properties.get('subjectaltname')
 
     subjectaltname_list = [
@@ -137,7 +132,7 @@ def _generate_ca_cert(params):
         backend=default_backend()
     )
     subject = issuer = x509.Name([
-        x509.NameAttribute(NameOID.COMMON_NAME, u"{}".format(
+        x509.NameAttribute(oid.NameOID.COMMON_NAME, u"{}".format(
             params.get('commonname'))),
     ])
 
@@ -172,7 +167,7 @@ def _issue_certificate(cacert, cakey, params):
         backend=default_backend()
     )
     subject = x509.Name([
-        x509.NameAttribute(NameOID.COMMON_NAME, params.get('commonname')),
+        x509.NameAttribute(oid.NameOID.COMMON_NAME, params.get('commonname')),
     ])
 
     cert = x509.CertificateBuilder().subject_name(
@@ -222,9 +217,7 @@ def _check_inputs(test_dict):
 
 
 def main():
-
     global logger
-    logger = logger()
     parser = argparse.ArgumentParser()
     parser.add_argument('--create-ca', action="store_true",
                         help='Generate new CA certificate.')
@@ -252,7 +245,6 @@ def main():
     cacert = None
     cakey = None
     save_path = './'
-    yaml = YAML()
 
     if args.save_path:
         save_path = args.save_path
@@ -262,7 +254,7 @@ def main():
             properties = yaml.load(f)
         logger.info(properties)
         cacert, cakey = generate_ca_cert(properties.get("ca"))
-        with open(save_path + '/' + CACERT_FILE, 'wb') as f:
+        with open(save_path + '/' + CA_CERT_FILE, 'wb') as f:
             f.write(cacert)
 
         with open(save_path + '/' + CAKEY_FILE, 'wb') as f:
@@ -291,4 +283,6 @@ def main():
 
 
 if __name__ == '__main__':
+    yaml = YAML()
+    logger = set_logger()
     main()
